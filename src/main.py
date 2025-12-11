@@ -1,14 +1,12 @@
 
 import streamlit as st
 from ultralytics import YOLO
-from PIL import Image
+import PIL
 
 def main():
     st.set_page_config(layout="wide")
     st.title(":camera: Computer vision app")
 
-
-    # Let user upload a picture
     with st.sidebar:
         st.title("Upload a picture")
 
@@ -28,16 +26,20 @@ def main():
 
     st.write("## YOLOv8 Object Detection")
 
-    yolov8_model = YOLO("src/models/yolo-v8/pretrained.pt")
-
-    image = Image.open(image_bytes)
-
-    result = yolov8_model.predict(image)
-
-    res_plotted = result[0].plot()[:,:, ::-1]
+    res_plotted = run_inference(image_bytes)
 
     st.image(res_plotted, caption="Detected objects", use_column_width=True)
+
+def run_inference(image_bytes):
+
+    yolov8_model = YOLO("src/models/yolo-v8/pretrained.pt")
+    image = PIL.Image.open(image_bytes)
     
+    result = yolov8_model.predict(image)
+    res_plotted = result[0].plot()[:,:, ::-1]
+
+    return res_plotted
+
 
 if __name__ == "__main__":
     main()
