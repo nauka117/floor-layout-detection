@@ -1,4 +1,7 @@
-samples/
-outputs/
 .venv/
 __pycache__/
+
+samples/
+outputs/
+
+models/
