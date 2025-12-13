@@ -1,6 +1,6 @@
 import streamlit as st
 
-from main import run_inference
+from pipelines.yolo import run_inference
 
 
 def run_streamlit_app():
