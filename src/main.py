@@ -3,9 +3,10 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
+
+from ui import _is_running_with_streamlit
 
 
 DEFAULT_MODEL_PATH = Path(__file__).resolve().parent / "models/yolo-v8/pretrained.pt"
@@ -20,27 +21,7 @@ def run_inference(image_source: Any, model_path: Path = DEFAULT_MODEL_PATH):
     return result[0].plot()[:, :, ::-1]
 
 
-def run_streamlit_app():
-    st.set_page_config(layout="wide")
-    st.title(":camera: Computer vision app")
 
-    with st.sidebar:
-        st.title("Upload a picture")
-        image_bytes = st.file_uploader(
-            "Upload image file", type=[".png", ".jpeg"], accept_multiple_files=False
-        )
-
-    st.write("## Uploaded picture")
-    if image_bytes:
-        st.write("🎉 Here's what you uploaded!")
-        st.image(image_bytes, width=200)
-    else:
-        st.warning("👈 Please upload an image first...")
-        st.stop()
-
-    st.write("## YOLOv8 Object Detection")
-    res_plotted = run_inference(image_bytes)
-    st.image(res_plotted, caption="Detected objects", use_column_width=True)
 
 
 def main():
@@ -77,17 +58,12 @@ def main():
         annotated_image.show()
 
 
-def _is_running_with_streamlit() -> bool:
-    try:
-        from streamlit.runtime.scriptrunner import get_script_run_ctx
 
-        return get_script_run_ctx() is not None
-    except Exception:
-        return False
 
 
 if __name__ == "__main__":
     if _is_running_with_streamlit():
+        from ui.streamlit import run_streamlit_app
         run_streamlit_app()
     else:
         main()
