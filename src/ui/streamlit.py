@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Add src directory to Python path so we can import from pipelines
+src_dir = Path(__file__).resolve().parent.parent
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
 import streamlit as st
 
 from pipelines.yolo import run_inference
@@ -28,3 +36,7 @@ def run_streamlit_app():
         caption="Detected objects",
         width="stretch"
     )
+
+
+if __name__ == "__main__":
+    run_streamlit_app()

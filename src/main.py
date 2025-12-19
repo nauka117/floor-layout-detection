@@ -5,7 +5,6 @@ from pathlib import Path
 from PIL import Image
 
 from pipelines.yolo import run_inference, DEFAULT_MODEL_PATH
-from ui import _is_running_with_streamlit
 
 
 def main():
@@ -46,8 +45,4 @@ def main():
 
 
 if __name__ == "__main__":
-    if _is_running_with_streamlit():
-        from ui.streamlit import run_streamlit_app
-        run_streamlit_app()
-    else:
-        main()
+    main()
