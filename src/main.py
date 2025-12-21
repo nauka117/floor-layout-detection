@@ -1,15 +1,15 @@
-
 import argparse
+import json
 from pathlib import Path
 
-from PIL import Image
-
-from pipelines.yolo import run_inference, DEFAULT_MODEL_PATH
+from pipelines.yolo import detect_layout, get_detection_results, DEFAULT_MODEL_PATH
+from utils.visualization import create_annotated_image
+from utils.json_export import format_walls_to_json, export_to_json
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run YOLOv8 inference on an image from the console."
+        description="Detect floor layout from an image and extract walls as JSON."
     )
     parser.add_argument(
         "image",
@@ -23,22 +23,55 @@ def main():
         help=f"Path to the YOLO model weights (default: {DEFAULT_MODEL_PATH}).",
     )
     parser.add_argument(
-        "--output",
+        "--output-json",
         type=Path,
         default=None,
-        help="Optional path to save the annotated image. Shows the image if omitted.",
+        help="Optional path to save JSON output. Prints to stdout if omitted.",
+    )
+    parser.add_argument(
+        "--output-image",
+        type=Path,
+        default=None,
+        help="Optional path to save the annotated image.",
+    )
+    parser.add_argument(
+        "--show-image",
+        action="store_true",
+        help="Show the annotated image (requires display).",
     )
 
     args = parser.parse_args()
-    res_plotted = run_inference(args.image, args.model)
-    annotated_image = Image.fromarray(res_plotted)
 
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        annotated_image.save(args.output)
-        print(f"Saved annotated image to {args.output}")
+    print(f"Processing image: {args.image}")
+    walls, source_name = detect_layout(args.image, args.model)
+    
+    
+    result_json = format_walls_to_json(walls, source_name)
+    
+    
+    json_str = json.dumps(result_json, indent=2, ensure_ascii=False)
+    if args.output_json:
+        export_to_json(result_json, args.output_json)
+        print(f"JSON saved to {args.output_json}")
     else:
-        annotated_image.show()
+        print("\n=== Detection Results (JSON) ===")
+        print(json_str)
+    
+    
+    if args.output_image or args.show_image:
+        result, walls, image = get_detection_results(args.image, args.model)
+        annotated_image = create_annotated_image(
+            args.image,
+            result,
+            walls,
+            output_path=args.output_image
+        )
+        
+        if args.output_image:
+            print(f"Annotated image saved to {args.output_image}")
+        
+        if args.show_image:
+            annotated_image.show()
 
 
 
