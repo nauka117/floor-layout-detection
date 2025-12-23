@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Optional
 import sys
 
 import numpy as np
@@ -67,8 +67,12 @@ def extract_walls_from_detections(result, image_source: Any) -> List[Wall]:
     return walls
 
 
-def detect_layout(image_source: Any, model_path: Path = DEFAULT_MODEL_PATH) -> Tuple[List[Wall], str]:
-    model = YOLO(str(model_path))
+def detect_layout(
+    image_source: Any,
+    model_path: Path = DEFAULT_MODEL_PATH,
+    model: Optional[YOLO] = None,
+) -> Tuple[List[Wall], str]:
+    yolo_model = model or YOLO(str(model_path))
     
     if isinstance(image_source, (str, Path)):
         image_path = Path(image_source)
@@ -78,17 +82,21 @@ def detect_layout(image_source: Any, model_path: Path = DEFAULT_MODEL_PATH) -> T
         image = Image.open(image_source)
         source_name = getattr(image_source, 'name', 'uploaded_image')
     
-    result = model.predict(image)
+    result = yolo_model.predict(image)
     
     walls = extract_walls_from_detections(result, image_source)
     
     return walls, source_name
 
 
-def get_detection_results(image_source: Any, model_path: Path = DEFAULT_MODEL_PATH):
-    model = YOLO(str(model_path))
+def get_detection_results(
+    image_source: Any,
+    model_path: Path = DEFAULT_MODEL_PATH,
+    model: Optional[YOLO] = None,
+):
+    yolo_model = model or YOLO(str(model_path))
     image = Image.open(image_source)
-    result = model.predict(image)
+    result = yolo_model.predict(image)
     walls = extract_walls_from_detections(result, image_source)
     
     return result, walls, image
